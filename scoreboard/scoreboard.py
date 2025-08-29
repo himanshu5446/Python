@@ -1,7 +1,7 @@
 from collections import namedtuple
 from dataclasses import dataclass
 from collections import defaultdict
-from typing import Dict, List
+from typing import Dict, List, Tuple
 
 # Collecting named items 
 Student = namedtuple("Student",["id","name","section"])
@@ -46,24 +46,60 @@ def transpose(matrix: List[List]):
     #unzip via zip(*)
     return [List(row) for row in zip(*matrix)]
 
+# Create a 2D grid
 def make_grid(rows,cols,fill=0):
     return [[fill for _ in range(cols)] for _ in range(rows)]
 
+#------------------------------------------
+# Get student name by id
+#------------------------------------------
 def get_student_name(sid: int) -> str:
     #quick index for lookup using dict comprension 
     index = {s.id: s.name for s in Students}
     return index.get(sid, "Unkonwn")
 
+#------------------------------------------
+# Total score per student
+#------------------------------------------
 def total_score(sid: int) -> float:
     subject_scores = {m.subject: m.score for m in marks_by_student.get(sid,[])}
     return sum(subject_scores.get(sub, 0) * weights.get(sub,0) for sub in subjects)
 
+#------------------------------------------
+# Average score per section
+#------------------------------------------
 def section_averages() -> Dict[str, float]:
     scores_by_section = defaultdict(list)
     for st in Students:
         scores_by_section[st.section].append(total_score(st.id))
     return {sec: (sum(vals)/len(vals) if vals else 0) for sec, vals in scores_by_section.items()}
 
+#------------------------------------------
+# Swap demo - swap name and section columns
+#------------------------------------------
+def swap_columns():
+    cols = ["id","name","section"]
+    i,j = 1,2
+    cols[i], cols[j] = cols[j], cols[i]
+    return cols #['id','section', 'name']
+
+#------------------------------------------
+# Set operations on sections
+# Students in both sections A and B
+# Students only in section A or B
+#------------------------------------------
+def intersect_sections() -> Tuple[set, set]:
+    secA = {s.id: s for s in Students if s.section == "A"}
+    secB = {s.id: s for s in Students if s.section == "B"}
+    common_ids = secA.keys() & secB.keys()
+    onlyA_ids = secA.keys() - secB.keys()
+    onlyB_ids = secB.keys() - secA.keys()
+    return common_ids, onlyA_ids | onlyB_ids
+
+
+
+#------------------------------------------
+# Menu and dispatch
 #------------------------------------------
 def show_menu():
     print("\n===Student scoreboard ===")
@@ -72,16 +108,47 @@ def show_menu():
 def action_total_per_student():
     for st in Students:
         print(f"{st.id:>2} | {st.name:<0} | {total_score(st.id): .2f}")
+
 def action_section_avgs():
     for sec, avg in section_averages().items():
         print(f"section {sec}: {avg:.2f}")
 
+#------------------------------------------
+# Placeholder actions for other menu items
+
+def action_swap_demo():
+    NotImplementedError
+
+def action_transpose():
+    NotImplementedError
+
+def action_unzip():
+    NotImplementedError
+
+def action_compare_sections():
+    NotImplementedError
+
+def action_add_update():
+    NotImplementedError
+
+def action_flatten():
+    NotImplementedError
+
 dispatch = {
     "1": action_total_per_student,
     "2": action_section_avgs,
+    "3": action_swap_demo,
+    "4": action_transpose,
+    "5": action_unzip,
+    "6": action_compare_sections,
+    "7": action_flatten,
+    "8": action_add_update
 
 }
 
+#------------------------------------------
+# Main loop
+#------------------------------------------
 def main():
     while True:
         show_menu()
